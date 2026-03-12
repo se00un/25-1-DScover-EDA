@@ -1,57 +1,170 @@
 # 25-1-DScover_EDA
 
-## 비만도 예측 데이터셋
+자세한 데이터 분석 과정과 후기는 블로그에 있습니다.
+  <br/> 👉 블로그 링크: https://blog.naver.com/develop0420/224185083087
+  
+**Competition**  
+Kaggle – Playground Series Season 4 Episode 2  
+Multi-Class Prediction of Obesity Risk  
+https://www.kaggle.com/competitions/playground-series-s4e2
 
-## 📌 소개
-이 데이터셋은 멕시코, 페루, 콜롬비아의 14세에서 61세 사이의 사람들을 대상으로 수집된 비만도 예측 관련 정보입니다. 총 17개의 속성과 2,111개의 레코드로 구성되어 있습니다.  
-본 데이터셋은 식습관, 신체 활동, 일반적인 신체 정보 등을 포함합니다.
 
-## 📊 데이터셋 개요
-- **총 데이터 개수**: 2,111개  
-- **총 속성 개수**: 17개  
+---
+
+
+## Exploratory Data Analysis
+
+EDA의 목표는 **변수 간 관계를 이해하고 feature engineering 방향을 설정하는 것**이었다.
+
+### Correlation Analysis
+
+#### Pearson Correlation (연속형 변수)
+
+연속형 변수 간 상관관계를 확인하였다.
+
+- 강한 상관관계는 거의 없음
+- 다중공선성 위험은 낮다고 판단
+
+#### Cramér’s V (범주형 변수)
+
+target(`NObeyesdad`)과의 관계를 확인한 결과
+
+상대적으로 높은 관계를 보인 변수
+
+- `gender`
+- `family_history_with_overweight`
 
 ---
 
-## 데이터 속성 설명
-### 1. **기본 정보 속성**
-| 컬럼명 | 설명 |
-|--------|------|
-| `id` | 각 데이터의 고유 식별자 |
-| `Gender` | 성별 (남성 / 여성) |
-| `Age` | 나이 (14~61세) |
-| `Height` | 키 (미터 단위) |
-| `Weight` | 몸무게 (킬로그램 단위) |
+### Target vs Feature Analysis
 
-### 2. **식습관 관련 속성**
-| 컬럼명 | 설명 |
-|--------|------|
-| `FAVC` | 고칼로리 음식 섭취 빈도 (Frequent consumption of high-caloric food) |
-| `FCVC` | 채소 섭취 빈도 (Frequency of consumption of vegetables) |
-| `NCP` | 하루 주식 섭취 횟수 (Number of main meals) |
-| `CAEC` | 간식 섭취 빈도 (Consumption of food between meals) |
-| `CH2O` | 하루 물 섭취량 (Consumption of water daily) |
-| `CALC` | 음주 빈도 (Consumption of alcohol) |
+각 범주에서 obesity가 얼마나 발생하는지 시각화를 통해 확인하였다.
 
-### 3. **신체 활동 관련 속성**
-| 컬럼명 | 설명 |
-|--------|------|
-| `SCC` | 칼로리 소비량 모니터링 여부 (Calories consumption monitoring) |
-| `FAF` | 신체 활동 빈도 (Physical activity frequency) |
-| `TUE` | 하루 기술 기기(스마트폰, 컴퓨터 등) 사용 시간 (Time using technology devices) |
-| `MTRANS` | 주된 이동 수단 (Transportation used) |
+특히 다음 변수들이 중요한 패턴을 보였다.
 
-### 4. **비만도 (NObeyesdad)**
-`NObeyesdad` 컬럼은 BMI(체질량지수)를 기반으로 다음과 같이 분류됩니다.
-Test 세트의 목적은 NObeyesdad를 예측하는 것입니다.
-
-| 비만도 범주 | 기준 |
-|------------|---------|
-| 저체중 (Underweight) |  18.5 |
-| 정상 체중 (Normal) | 18.5 ≤ < 24.9 |
-| 과체중 (Overweight) | 25.0 ≤ < 29.9 |
-| 비만 I (Obesity I) | 30.0 ≤ < 34.9 |
-| 비만 II (Obesity II) | 35.0 ≤ < 39.9 |
-| 비만 III (Obesity III) |  ≥ 40 |
+- Family history with obesity
+- Gender
+- High calorie food consumption
 
 ---
-이 데이터셋을 활용하여 다양한 연구 및 분석을 수행해 보세요! 🚀
+
+### ANOVA
+
+연속형 변수와 target 간 관계를 확인하기 위해 **ANOVA 검정**을 수행하였다.
+
+- 대부분 수치형 변수들이 **p < 0.05**
+- target과 통계적으로 유의미한 관계 존재
+
+---
+
+## Feature Engineering
+
+EDA 결과를 바탕으로 여러 파생변수를 생성하고 검증하였다.
+
+### BMI Feature
+
+비만 예측에서 중요한 지표이므로 직접 생성하였다.
+BMI = Weight / Height²
+
+
+
+### Healthy Eating Score
+
+식습관 관련 변수들을 결합하여 새로운 지표를 생성하였다.
+
+사용 변수
+
+- FAVC
+- FCVC
+- NCP
+- CAEC
+- CH2O
+- CALC
+
+통계적 검증
+
+- Pearson correlation: **0.263**
+- Spearman correlation: **0.255**
+- p-value: **< 0.001**
+
+→ 통계적으로 유의미한 관계 확인
+
+
+### Sedentary Score
+
+좌식 생활 가설 기반 파생 변수
+Sedentary Score = TUE - FAF
+
+상관계수
+
+- Pearson: **0.034**
+- Spearman: **0.061**
+
+→ 관계가 거의 없어 **feature drop**
+
+---
+
+### Clustering
+
+Age와 BMI 기반 클러스터링 수행
+
+- k = **3**
+
+그러나 모델에서 **feature importance가 낮아 drop**
+
+---
+
+### Polynomial Features
+
+Age와 BMI의 **비선형 관계 학습**을 위해
+
+- Polynomial degree = **2**
+
+적용
+
+---
+
+## Feature Selection
+
+LightGBM feature importance 기반으로 일부 변수 제거
+
+drop features
+
+- BMI²
+- Age²
+- SMOKE
+- FAVC
+
+---
+## Modeling
+
+모델 비교는 **PyCaret AutoML**을 사용하였다.
+
+Top models
+
+1. LightGBM  
+2. XGBoost  
+3. Gradient Boosting
+
+---
+
+### LightGBM
+
+Random Search 기반 하이퍼파라미터 튜닝 수행
+
+최적 파라미터
+- num_leaves = 20
+- n_estimators = 100
+- max_depth = 5
+- learning_rate = 0.1
+
+---
+
+## Result
+
+최종 성능
+
+- PyCaret baseline accuracy: **0.9040**
+- Test accuracy: **0.89**
+- Tuned LightGBM accuracy: **0.9066**
+
